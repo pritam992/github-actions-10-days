@@ -1,0 +1,28 @@
+name: Day 07 - Cloud Passport
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: python -m unittest discover -s app -v
+      - uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - run: aws sts get-caller-identity
+      - name: Build and publish to ECR
+        env:
+          REGISTRY: ${{ vars.ECR_REGISTRY }}
+          REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+        run: |
+          aws ecr get-login-password | docker login --username AWS --password-stdin "$REGISTRY"
+          IMAGE="$REGISTRY/$REPOSITORY:$GITHUB_SHA"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "Published $IMAGE" >> "$GITHUB_STEP_SUMMARY"

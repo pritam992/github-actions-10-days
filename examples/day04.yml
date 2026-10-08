@@ -1,0 +1,26 @@
+name: Day 04 - Teamwork
+on: [workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.value }}
+    steps:
+      - id: version
+        run: echo "value=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+  report:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          VERSION: ${{ needs.build.outputs.version }}
+          COURSE: ${{ vars.COURSE_NAME }}
+        run: |
+          echo "Course: $COURSE"
+          echo "Version: $VERSION" >> "$GITHUB_STEP_SUMMARY"
+      - name: Check secret exists without printing it
+        env:
+          DEMO_TOKEN: ${{ secrets.DEMO_TOKEN }}
+        run: test -n "$DEMO_TOKEN"

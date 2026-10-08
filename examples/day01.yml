@@ -1,0 +1,22 @@
+name: Day 01 - Ignition
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say hello
+        run: echo "Build. Break. Fix. Ship."
+      - name: Inspect context
+        env:
+          REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          echo "Repository=$REPO; Event=$EVENT"
+          uname -a
+      - name: Check arithmetic
+        run: test "$((5 + 5))" -eq 10

@@ -1,0 +1,27 @@
+name: Day 05 - Parallel Universe
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Test and capture logs
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m unittest discover -s app -v 2>&1 | tee test-results.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: results-${{ matrix.python }}
+          path: test-results.txt
+          retention-days: 7

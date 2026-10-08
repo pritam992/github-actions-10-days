@@ -1,0 +1,15 @@
+name: Day 10 - Graduation
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  quality:
+    uses: ./.github/workflows/reusable-tests.yml
+    with:
+      python-version: '3.12'
+  release-check:
+    needs: quality
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Tests passed. Run the reviewed image-publish and deployment workflows." >> "$GITHUB_STEP_SUMMARY"

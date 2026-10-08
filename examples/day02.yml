@@ -1,0 +1,19 @@
+name: Day 02 - Gatekeeper
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: test -f README.md
+      - name: Show trigger
+        env:
+          EVENT: ${{ github.event_name }}
+        run: echo "$EVENT"

@@ -1,0 +1,33 @@
+name: Day 08 - Mission Control
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Previously published full 40-character commit SHA
+        required: true
+        type: string
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: sandbox-deployment
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    environment: sandbox
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Deploy through Systems Manager
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          REGISTRY: ${{ vars.ECR_REGISTRY }}
+          REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+          INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+        run: python scripts/deploy_ssm.py
